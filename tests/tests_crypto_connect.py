@@ -148,3 +148,13 @@ class TestCryptoConnect(unittest.TestCase):
             clt.connect()
             clt.disconnect()
         assert ua.StatusCodes.BadIdentityTokenRejected == exc_info.type.code
+
+    def test_user_authentication(self):
+        clt = Client(self.uri_crypto_no_anoymous)
+        clt.set_user("user1")
+        clt.set_password("pw1")
+        try:
+            clt.connect()
+            self.assertTrue(clt.get_objects_node().get_children())
+        finally:
+            clt.disconnect()

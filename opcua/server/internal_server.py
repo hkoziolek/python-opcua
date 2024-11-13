@@ -224,6 +224,8 @@ class InternalServer(object):
         return self.endpoints[:]
 
     def create_session(self, name, user=UserManager.User.Anonymous):
+        if "Username" in self.user_manager._parent._policyIDs and user == UserManager.User.Anonymous:
+            raise ua.UaError("Anonymous login is not allowed when 'Username' is set")
         return self.session_cls(self, self.aspace, self.subscription_service, name, user=user)
 
     def enable_history_data_change(self, node, period=timedelta(days=7), count=0):
@@ -320,6 +322,9 @@ class InternalSession(object):
     def create_session(self, params, sockname=None):
         self.logger.info("Create session request")
 
+        if "Username" in self.user_manager._parent._policyIDs and self.user == UserManager.User.Anonymous:
+            raise ua.UaError("Anonymous login is not allowed when 'Username' is set")
+
         result = ua.CreateSessionResult()
         result.SessionId = self.session_id
         result.AuthenticationToken = self.authentication_token
@@ -354,6 +359,8 @@ class InternalSession(object):
         if isinstance(id_token, ua.UserNameIdentityToken):
             if self.user_manager.check_user_token(self, id_token) == False:
                 raise utils.ServiceError(ua.StatusCodes.BadUserAccessDenied)
+        if "Username" in self.user_manager._parent._policyIDs and isinstance(id_token, ua.AnonymousIdentityToken):
+            raise utils.ServiceError(ua.StatusCodes.BadIdentityTokenRejected)
         self.logger.info("Activated internal session %s for user %s", self.name, self.user)
         return result
 

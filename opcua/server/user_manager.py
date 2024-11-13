@@ -1,4 +1,3 @@
-
 import logging
 from enum import Enum
 from struct import unpack_from
@@ -37,6 +36,8 @@ class UserManager(object):
         """
         if self.allow_remote_admin and userName in ("admin", "Admin"):
             isession.user = UserManager.User.Admin
+        if "Username" in self._parent._policyIDs and userName == "Anonymous":
+            return False
         return True
 
     def set_user_manager(self, user_manager):

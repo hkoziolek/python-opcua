@@ -230,6 +230,10 @@ class Server(object):
         """
         self._policyIDs = policyIDs
 
+        # Enforce restriction on anonymous login
+        if "Username" in policyIDs and "Anonymous" in policyIDs:
+            raise ValueError("Anonymous login is not allowed when 'Username' is set")
+
     def _setup_server_nodes(self):
         # to be called just before starting server since it needs all parameters to be setup
         if ua.SecurityPolicyType.NoSecurity in self._security_policy:
